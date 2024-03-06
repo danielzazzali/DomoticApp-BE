@@ -24,4 +24,4 @@ jobs:
       run: npm install -g complexity-report
 
     - name: Run complexity-report
-      run: cr src/
+      run: cr src
