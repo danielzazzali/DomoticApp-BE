@@ -3,14 +3,16 @@ const router = express.Router();
 const routesService = require('../services/routesService');
 const constants = require('../config/constants');
 
-router.get(constants.Routes.LIGHTS, async function (req, res) {
+async function getLights (req, res) {
     try {
         const data = await routesService.getLights();
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: 'Error getting data' });
     }
-});
+}
+
+router.get(constants.Routes.LIGHTS, getLights);
 
 router.post(constants.Routes.LIGHTS, async function (req, res) {
     try {
