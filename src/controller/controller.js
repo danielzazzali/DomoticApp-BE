@@ -3,7 +3,7 @@ const router = express.Router();
 const routesService = require('../services/routesService');
 const constants = require('../config/constants');
 
-router.get(constants.Routes.LIGHTS, async (req, res) => {
+router.get(constants.Routes.LIGHTS, async function (req, res) {
     try {
         const data = await routesService.getLights();
         res.json(data);
@@ -12,7 +12,7 @@ router.get(constants.Routes.LIGHTS, async (req, res) => {
     }
 });
 
-router.post(constants.Routes.LIGHTS, async (req, res) => {
+router.post(constants.Routes.LIGHTS, async function (req, res) {
     try {
         if(!req.body){
             res.status(400).json({ error: 'Body is empty' });
@@ -24,7 +24,7 @@ router.post(constants.Routes.LIGHTS, async (req, res) => {
     }
 });
 
-router.put(constants.Routes.LIGHTS, async (req, res) => {
+router.put(constants.Routes.LIGHTS, async function (req, res) {
     try {
         if(!req.body){
             res.status(400).json({ error: 'Body is empty' });
@@ -36,7 +36,7 @@ router.put(constants.Routes.LIGHTS, async (req, res) => {
     }
 });
 
-router.get(constants.Routes.LIGHTS_BY_NAME, async (req, res) => {
+router.get(constants.Routes.LIGHTS_BY_NAME, async function (req, res) {
     try {
         const light = await routesService.findLightByName(req.params.name);
 
@@ -55,7 +55,7 @@ router.get(constants.Routes.LIGHTS_BY_NAME, async (req, res) => {
     }
 });
 
-router.delete(constants.Routes.LIGHTS_BY_NAME, async (req, res) => {
+router.delete(constants.Routes.LIGHTS_BY_NAME, async function (req, res) {
     try {
         const light = await routesService.deleteLight(req.params.name);
 
