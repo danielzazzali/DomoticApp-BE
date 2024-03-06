@@ -29,7 +29,7 @@ jobs:
           ${{ runner.OS }}-node-
 
     - name: Install complexity-report
-      run: npm install complexity-report
+      run: npm install -g complexity-report
 
     - name: Run complexity-report
-      run: cd ./src && cr .
+      run: pwd && cd ./src && pwd && cr .
