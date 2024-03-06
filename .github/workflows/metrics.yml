@@ -1,0 +1,27 @@
+name: Complexity Report
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  complexity-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Cache global npm packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+
+    - name: Install complexity-report
+      run: npm install -g complexity-report
+
+    - name: Run complexity-report
+      run: cr src/
