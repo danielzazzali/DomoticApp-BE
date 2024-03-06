@@ -25,13 +25,8 @@ jobs:
         restore-keys: |
           ${{ runner.OS }}-node-
 
-    - name: Install dependencies
-      run: |
-        npm install -g complexity-report
-        npm install @babel/core @babel/cli @babel/preset-env
-
-    - name: Transpile code
-      run: npx babel src --out-dir dist --presets=@babel/preset-env
+    - name: Install complexity-report
+      run: npm install -g complexity-report
 
     - name: Run complexity-report
-      run: cr dist/
+      run: cr src/
