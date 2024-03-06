@@ -6,7 +6,12 @@ class Database {
     constructor() {
         if (!Database.instance) {
             this.pool = new Pool({
-                connectionString: config.getDatabaseUrl(),
+                user: config.getDbUser(),
+                host: config.getDbHost(),
+                database: config.getDbName(),
+                password: config.getDbPassword(),
+                port: config.getDbPort(),
+                ssl: config.getSsl(),
             });
             this.pool.on('error', (err, client) => {
                 console.error('Unexpected error on idle client', err);
@@ -20,7 +25,7 @@ class Database {
     }
 
     query(text, params) {
-        return this.pool.query(text, params);
+        return this.pool.query(text, params).then((res) => { return res; }).catch((err) => { console.log(err); return err; })
     }
 
     connect() {

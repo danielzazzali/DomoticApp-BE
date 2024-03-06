@@ -1,18 +1,57 @@
 const { Light } = require("../model/light");
 const config = require('../config/config');
-const TuyAPI = require("tuyapi");
+const TuyAPI = require('tuyapi');
+const db = require('../database/database')
+const constants = require('../config/constants');
+const fs = require('fs').promises;
 
 class LightsService {
+
     constructor() {
+        this._lights = [];
+        this.isInitialized = false;
+    }
 
-        // TODO: this._lights = #getLightsFromDb();
+    async init() {
+        this._lights = await this.getLightsFromDb();
+        this.isInitialized = true;
+    }
 
-        this._lights = [
-            // Examples
-            new Light("abcdefghijklmnop", "abcdefghijklmnop", "Luz Sala"),
-            new Light("abcdefghijklmnop", "abcdefghijklmnop", "Luz Cocina"),
-            new Light("abcdefghijklmnop", "abcdefghijklmnop", "Luz Dormitorio")
-        ];
+
+    async loadSqlQuery(filePath) {
+        try {
+            return await fs.readFile(filePath, { encoding: 'utf8' });
+        } catch (error) {
+            console.error(`Error reading SQL file: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getLightsFromDb() {
+        const query = await this.loadSqlQuery(constants.SqlFiles.GET_LIGHTS);
+        const result = await db.query(query);
+        return result.rows.map(row => new Light(row.id, row.key, row.name, row.is_on, row.mode, row.brightness, row.color_temperature));
+    }
+
+    async addLightToBd(id, key, name, isOn, mode, brightness, colorTemperature) {
+        const insertQuery = await this.loadSqlQuery(constants.SqlFiles.INSERT_LIGHT);
+        const values = [id, key, name, isOn, mode, brightness, colorTemperature];
+        const result = await db.query(insertQuery, values);
+        const newRow = result.rows[0];
+        return new Light(newRow.id, newRow.key, newRow.name, newRow.is_on, newRow.mode, newRow.brightness, newRow.color_temperature);
+    }
+
+    async deleteLightOnBd(id) {
+        const deleteQuery = await this.loadSqlQuery(constants.SqlFiles.DELETE_LIGHT);
+        const result = await db.query(deleteQuery, [id]);
+        return result.rows[0];
+    }
+
+    async updateLightInDb(id, key, name, isOn, mode, brightness, colorTemperature) {
+        const updateQuery = await this.loadSqlQuery(constants.SqlFiles.UPDATE_LIGHT);
+        const values = [id, key, name, isOn, mode, brightness, colorTemperature];
+        const res = await db.query(updateQuery, values);
+        return res.rows[0];
     }
 
     getLights() {
@@ -28,35 +67,59 @@ class LightsService {
         return Light.formatLightResponse(light);
     }
 
-    addLight(id, key, name, isOn, mode, brightness, colorTemperature) {
-        //TODO: aqui VALIDAR y luego agregar la luz en bd
-        const device = new TuyAPI({
-            id: id,
-            key: key,
-            version: config.getVersion(),
-            ip: config.getIpAddress()
-        });
-
-        const light = new Light(name, isOn, mode, brightness, colorTemperature, device);
+    async addLight(id, key, name, isOn, mode, brightness, colorTemperature) {
+        const light = await this.addLightToBd(id, key, name, isOn, mode, brightness, colorTemperature);
         this._lights.push(light);
         return Light.formatLightResponse(light);
     }
 
-    updateLight(id, key, name, isOn, mode, brightness, colorTemperature) {
+    async updateLight(name, newName, isOn, mode, brightness, colorTemperature) {
+
         const light = this._lights.find(light => light.name === name);
-        light.name = name;
-        light.isOn = isOn;
-        light.mode = mode;
-        light.brightness = brightness;
-        light.colorTemperature = colorTemperature;
+
+        if(!light) {
+            throw new Error('Light not found');
+        }
+
+        const updatedRow = await this.updateLightInDb(light.id, light.key, newName, isOn, mode, brightness, colorTemperature);
+
+        if (light) {
+            light.name = updatedRow.name;
+            light.isOn = updatedRow.is_on;
+            light.mode = updatedRow.mode;
+            light.brightness = updatedRow.brightness;
+            light.colorTemperature = updatedRow.color_temperature;
+
+/*            try {
+                await light.updateDevice();
+            } catch (error) {
+                console.error('Error updating device:', error);
+            }*/
+        }
+
         return Light.formatLightResponse(light);
     }
 
-    #getLightsFromDb() {
-        //TODO: load lights from db starting the app
+    async deleteLight(name) {
+
+        const id = this._lights.find(light => light.name === name).id;
+
+        const result = await this.deleteLightOnBd(id);
+
+        if (!result) {
+            throw new Error('Light not found');
+        }
+
+        this._lights = this._lights.filter(light => light.id !== id);
     }
 
 }
 
 const lightsService = new LightsService();
+lightsService.init().then(() => {
+    console.log('LightsService initialized');
+}).catch(err => {
+    console.error('Error initializing LightsService:', err);
+});
+
 module.exports = lightsService;

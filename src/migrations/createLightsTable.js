@@ -1,27 +1,19 @@
-async function createLightsTable(db) {
-    const checkTableQuery = `
-            SELECT EXISTS (
-                SELECT FROM 
-                    pg_tables
-                WHERE 
-                    schemaname = 'public' AND 
-                    tablename  = 'lights'
-            );
-    `;
+const fs = require('fs').promises;
+const constants = require('../config/constants');
 
-    const createTableQuery = `
-            CREATE TABLE lights (
-                id INTEGER PRIMARY KEY,
-                key VARCHAR(255) NOT NULL UNIQUE,
-                name VARCHAR(255) NOT NULL UNIQUE,
-                is_on BOOLEAN NOT NULL DEFAULT false,
-                mode VARCHAR(50) NOT NULL DEFAULT 'white',
-                brightness INTEGER NOT NULL CHECK (brightness BETWEEN 10 AND 1000),
-                color_temperature INTEGER NOT NULL CHECK (color_temperature BETWEEN 0 AND 1000)
-            );
-    `;
-
+async function readSqlFile(filePath) {
     try {
+        return await fs.readFile(filePath, {encoding: 'utf8'});
+    } catch (error) {
+        throw new Error(`Error reading the SQL file: ${error.message}`);
+    }
+}
+
+async function createLightsTable(db) {
+    try {
+        const checkTableQuery = await readSqlFile(constants.SqlFiles.CHECK_LIGHTS_TABLE);
+        const createTableQuery = await readSqlFile(constants.SqlFiles.CREATE_LIGHTS_TABLE);
+
         const res = await db.query(checkTableQuery);
 
         if (!res.rows[0].exists) {

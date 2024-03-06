@@ -1,0 +1,3 @@
+DELETE FROM lights
+WHERE id = $1
+RETURNING *;

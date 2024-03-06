@@ -5,6 +5,10 @@ const config = require('../config/config');
 
 function configureRoutes(app) {
     app.use(express.json());
+    app.use((req, res, next) => {
+        console.log(`Request received: ${req.method} ${req.path}`);
+        next();
+    });
     app.use('/', controller);
 
     app.use((err, req, res, next) => {
