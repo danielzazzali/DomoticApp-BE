@@ -17,6 +17,9 @@ jobs:
       with:
         node-version: '20.11.0'
 
+    - name: Install project dependencies
+      run: npm ci
+
     - name: Cache global npm packages
       uses: actions/cache@v3
       with:
