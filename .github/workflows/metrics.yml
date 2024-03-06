@@ -12,6 +12,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Use Node.js LTS
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.11.0'
+
     - name: Cache global npm packages
       uses: actions/cache@v3
       with:
@@ -24,4 +29,4 @@ jobs:
       run: npm install -g complexity-report
 
     - name: Run complexity-report
-      run: cr src
+      run: cr src/
