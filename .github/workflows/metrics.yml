@@ -22,9 +22,9 @@ jobs:
 
       - name: Generate Plato Report
         run: plato -r -d report './src/**/*.js'
-          
-      - name: Upload Plato Report
-        uses: actions/upload-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
-          name: plato-report
-          path: report
+          branch: gh-pages
+          folder: report
